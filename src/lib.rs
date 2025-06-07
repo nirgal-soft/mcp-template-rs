@@ -16,6 +16,7 @@ use crate::state::ServerState;
 #[derive(Clone)]
 pub struct Server {
   config: Config,
+  #[allow(dead_code)]
   state: ServerState,
 }
 
@@ -48,6 +49,7 @@ impl Server {
   }
 
   // Example tool - replace with your own
+  #[allow(dead_code)]
   async fn server_info(&self) -> Result<String, rmcp::Error> {
     Ok(serde_json::json!({
       "name": self.config.server.name,
