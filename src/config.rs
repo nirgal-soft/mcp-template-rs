@@ -21,6 +21,8 @@ pub struct ServerConfig {
 pub enum TransportType {
   Stdio,
   Http { port: u16 },
+  #[serde(rename = "http-streaming")]
+  HttpStreaming { port: u16 },
 }
 
 #[derive(Debug, Deserialize, Clone)]

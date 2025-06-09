@@ -4,13 +4,13 @@ A production-ready template for building [Model Context Protocol (MCP)](https://
 
 ## Features
 
-- 🚀 **Production Ready** - Structured logging, error handling, and graceful shutdown
-- 🛠️ **Easy to Extend** - Clear patterns for adding new tools, resources, and prompts
-- 📦 **Multiple Deployment Options** - Docker, systemd, or standalone binary
-- ⚙️ **Flexible Configuration** - Environment variables and config files
-- 🧪 **Testing Infrastructure** - Unit and integration test setup
-- 📊 **Telemetry Built-in** - Structured logging with tracing
-- 🔧 **Modular Architecture** - Clean separation of concerns
+- **Production Ready** - Structured logging, error handling, and graceful shutdown
+- **Easy to Extend** - Clear patterns for adding new tools, resources, and prompts
+- **Multiple Deployment Options** - Docker, systemd, or standalone binary
+- **Flexible Configuration** - Environment variables and config files
+- **Testing Infrastructure** - Unit and integration test setup
+- **Telemetry Built-in** - Structured logging with tracing
+- **Modular Architecture** - Clean separation of concerns
 
 ## Quick Start
 
