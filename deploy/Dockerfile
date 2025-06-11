@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:1.75 as builder
+FROM rust:1.86 AS builder
 
 WORKDIR /app
 
@@ -22,6 +22,5 @@ RUN apt-get update && apt-get install -y \
 COPY --from=builder /app/target/release/{{project-name}} /usr/local/bin/mcp-server
 
 ENV RUST_LOG=info
-ENV MCP_SERVER_TRANSPORT=stdio
 
 ENTRYPOINT ["mcp-server"]

@@ -1,6 +1,6 @@
 [server]
 name = "{{project-name}}"
-transport = { http-streaming = { port = 8080 } }
+transport = { stdio }
 
 [telemetry]
 level = "info"

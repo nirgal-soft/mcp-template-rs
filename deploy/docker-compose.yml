@@ -1,0 +1,15 @@
+services:
+  mcp-server:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: {{project-name}}:latest
+    container_name: {{project-name}}
+    environment:
+      - RUST_LOG=info
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount the config file from the project root
+      - ../config.toml:/config.toml:ro
+    restart: unless-stopped
