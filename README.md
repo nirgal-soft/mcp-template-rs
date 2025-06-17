@@ -36,7 +36,7 @@ The easiest way to use this template is with [`cargo-generate`](https://github.c
 3. **Navigate to your new project and run it**:
    ```bash
    cd your-project-name
-   cp config.toml.example config.toml
+   cp stdio_config.toml.example config.toml
    cargo run
    ```
 
@@ -85,7 +85,8 @@ your-project-name/
 ├── ci/                      # Empty directory for your CI/CD files
 ├── Cargo.toml               # Project configuration (with your project name)
 ├── Cargo.lock               # Dependency lock file
-├── config.toml.example      # Example configuration file
+├── stdio_config.toml.example           # Example configuration file
+├── streaming_config.toml.example       # Example configuration file
 ├── .env.example             # Example environment variables
 ├── .gitignore               # Git ignore rules
 └── license.txt              # MIT license

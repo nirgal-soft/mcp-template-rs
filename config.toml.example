@@ -1,7 +1,0 @@
-[server]
-name = "{{project-name}}"
-transport = { http-streaming = { port = 8080 } }
-
-[telemetry]
-level = "info"
-format = "pretty"
