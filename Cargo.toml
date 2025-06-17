@@ -33,6 +33,7 @@ thiserror = "1.0"
 # Configuration
 config = "0.13"
 dotenvy = "0.15"
+dirs = "5.0"
 
 # Logging and telemetry
 tracing = "0.1"

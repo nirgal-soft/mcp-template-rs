@@ -1,5 +1,5 @@
 services:
-  mcp-server:
+  {{project-name}}:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
@@ -10,6 +10,17 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      # Mount the config file from the project root
+      # Option 1: Mount your local config.toml directly into the container at /config.toml
+      # This allows you to customize the config without rebuilding the image
       - ../config.toml:/config.toml:ro
+      
+      # Option 2: If you want to persist the user config directory, uncomment this instead:
+      # - ~/.config/{{project-name}}:/app/.config/{{project-name}}:rw
+      
+      # Option 3: Use a named volume for persistent config (recommended for production):
+      # - {{project-name}}-config:/app/.config/{{project-name}}:rw
     restart: unless-stopped
+
+# Uncomment this if using Option 3 above
+# volumes:
+#   {{project-name}}-config:

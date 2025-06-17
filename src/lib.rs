@@ -75,13 +75,6 @@ impl Server {
           }
         }
       }
-      config::TransportType::Http { port } => {
-        tracing::warn!(" SSE transport is deprecated! Consider using http-streaming instead.");
-        tracing::info!("MCP Server ready!");
-        
-        // For backward compatibility - this would require re-enabling SSE features
-        anyhow::bail!("SSE transport has been removed. Please use 'http-streaming' transport instead.");
-      }
       config::TransportType::HttpStreaming { port } => {
         tracing::info!("MCP Server ready!");
         tracing::info!("Transport: HTTP Streaming (using rmcp StreamableHttpService)");
@@ -97,7 +90,7 @@ impl Server {
         let config = StreamableHttpServerConfig::default();
         
         let service = StreamableHttpService::new(
-          move || self.clone(),
+          move || Ok(self.clone()),
           session_manager,
           config,
         );

@@ -19,8 +19,19 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Create app user for security
+RUN useradd -r -s /bin/false -m -d /app appuser
+
 COPY --from=builder /app/target/release/{{project-name}} /usr/local/bin/mcp-server
 
+# Create config directory
+RUN mkdir -p /app/.config
+
+# Switch to app user
+USER appuser
+WORKDIR /app
+
 ENV RUST_LOG=info
+ENV HOME=/app
 
 ENTRYPOINT ["mcp-server"]
