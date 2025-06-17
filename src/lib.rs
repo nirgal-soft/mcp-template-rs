@@ -103,16 +103,27 @@ impl Server {
           }));
         
         let listener = tokio::net::TcpListener::bind(addr).await?;
+        let server = axum::serve(listener, app);
         
-        // Set up graceful shutdown
-        let shutdown_signal = async {
-          tokio::signal::ctrl_c().await.ok();
+        // Set up graceful shutdown using the same pattern as STDIO
+        let shutdown = tokio::spawn(async move {
+          if let Err(e) = tokio::signal::ctrl_c().await {
+            tracing::error!("Failed to listen for shutdown signal: {}", e);
+          }
           tracing::info!("Shutdown signal received");
-        };
-        
-        axum::serve(listener, app)
-          .with_graceful_shutdown(shutdown_signal)
-          .await?;
+        });
+
+        tokio::select! {
+          result = server => {
+            match result {
+              Ok(_) => tracing::info!("HTTP server stopped normally"),
+              Err(e) => tracing::error!("HTTP server stopped with error: {}", e),
+            }
+          }
+          _ = shutdown => {
+            tracing::info!("Shutting down gracefully");
+          }
+        }
       }
     }
 
