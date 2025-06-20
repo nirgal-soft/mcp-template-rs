@@ -97,8 +97,7 @@ impl Config {
 
   /// Get the configuration file paths in priority order
   /// 1. ~/.config/{project-name}/config.toml (user config)
-  /// 2. ./config.toml (local override)
-  /// 3. /config.toml (Docker mount)
+  /// 2. /config.toml (Docker mount)
   fn get_config_sources() -> Result<Vec<PathBuf>, ConfigError> {
     let mut sources = Vec::new();
 
@@ -111,13 +110,6 @@ impl Config {
       }
     }
 
-    // Local config.toml (development override)
-    let local_config = Path::new("config.toml");
-    if local_config.exists() {
-      sources.push(local_config.to_path_buf());
-      tracing::info!("Using local config override: {}", local_config.display());
-    }
-
     // Docker mount config (container environment)
     let docker_config = Path::new("/config.toml");
     if docker_config.exists() {
@@ -127,7 +119,7 @@ impl Config {
 
     if sources.is_empty() {
       return Err(ConfigError::Message(
-        format!("No configuration file found. Expected config.toml in current directory or ~/.config/{}/config.toml", env!("CARGO_PKG_NAME"))
+        format!("No configuration file found. Expected ~/.config/{}/config.toml", env!("CARGO_PKG_NAME"))
       ));
     }
 

@@ -1,6 +1,6 @@
 [server]
 name = "{{project-name}}"
-transport = { stdio }
+transport = "stdio"
 
 [telemetry]
 level = "info"
