@@ -1,13 +1,18 @@
-pub mod config;
+ub mod config;
 pub mod error;
 pub mod tools;
 pub mod state;
 pub mod telemetry;
 
-use rmcp::{ServerHandler, ServiceExt, Error as McpError, tool};
+use std::future::Future;
+use std::net::SocketAddr;
+use rmcp::{
+  ServerHandler, ServiceExt, Error as McpError,
+  schemars, tool, tool_handler, tool_router
+};
 use rmcp::transport::{stdio, streamable_http_server::{StreamableHttpService, StreamableHttpServerConfig}};
 use rmcp::model::*;
-use std::net::SocketAddr;
+use rmcp::handler::server::{router::tool::ToolRouter, tool::Parameters, wrapper::Json};
 use tower::Service;
 
 use crate::config::Config;
@@ -19,24 +24,26 @@ pub struct Server {
   config: Config,
   #[allow(dead_code)]
   state: ServerState,
+  tool_router: ToolRouter<Self>,
 }
 
-#[tool(tool_box)]
+#[tool_router]
 impl Server {
   // Replace with your own tools, these are for example
   #[tool(description = "Roll dice with specified number of sides")]
-  pub async fn roll(&self, #[tool(aggr)] req: RollRequestExample) -> Result<CallToolResult, McpError>{
+  pub async fn roll(&self, Parameters(RollRequestExample{count, sides}): Parameters<RollRequestExample>) -> Result<CallToolResult, McpError>{
+    let req = RollRequestExample{count, sides};
     DiceToolExample.roll(req).await
   }
 
   #[tool(description = "Roll a standard six-sided die (d6)")]
   pub async fn roll_d6(&self) -> Result<CallToolResult, McpError>{
-    self.roll(RollRequestExample{count: 1, sides: 6}).await
+    self.roll(Parameters(RollRequestExample{count: 1, sides: 6})).await
   }
 
   #[tool(description = "Roll a standard twenty-sided die (d20)")]
   pub async fn roll_d20(&self) -> Result<CallToolResult, McpError>{
-    self.roll(RollRequestExample{count: 1, sides: 20}).await
+    self.roll(Parameters(RollRequestExample{count: 1, sides: 20})).await
   }
 }
 
@@ -48,7 +55,7 @@ impl Server {
     let state = ServerState::new(&config).await?;
     
     tracing::info!("Server initialization complete");
-    Ok(Self { config, state })
+    Ok(Self { config, state, tool_router: Self::tool_router(), })
   }
 
   pub async fn run(self) -> anyhow::Result<()> {
@@ -131,7 +138,7 @@ impl Server {
   }
 }
 
-#[tool(tool_box)]
+#[tool_handler]
 impl ServerHandler for Server {
   fn get_info(&self) -> ServerInfo {
     ServerInfo {
