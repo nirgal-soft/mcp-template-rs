@@ -1,3 +1,5 @@
+#[cfg(feature = "auth")]
+pub mod auth;
 pub mod config;
 pub mod error;
 pub mod tools;
@@ -7,12 +9,12 @@ pub mod telemetry;
 use std::future::Future;
 use std::net::SocketAddr;
 use rmcp::{
-  ServerHandler, ServiceExt, Error as McpError,
-  schemars, tool, tool_handler, tool_router
+  ServerHandler, ServiceExt, ErrorData as McpError,
+  tool, tool_handler, tool_router
 };
 use rmcp::transport::{stdio, streamable_http_server::{StreamableHttpService, StreamableHttpServerConfig}};
 use rmcp::model::*;
-use rmcp::handler::server::{router::tool::ToolRouter, tool::Parameters, wrapper::Json};
+use rmcp::handler::server::{router::tool::ToolRouter, tool::Parameters};
 use tower::Service;
 
 use crate::config::Config;

@@ -1,13 +1,13 @@
 use rand::Rng;
-use rmcp::{Error as McpError, model::{CallToolResult, Content}};
+use rmcp::{ErrorData as McpError, model::{CallToolResult, Content}};
 use serde::Deserialize;
 use schemars::JsonSchema;
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct RollRequestExample{
-  #[schemars(description = "Number of sides on the dice (e.g. 6 for d6, 20 for d20)")]
+  /// Number of sides on the dice (e.g. 6 for d6, 20 for d20)
   pub sides: u32,
-  #[schemars(description = "Number of dice to roll")]
+  /// Number of dice to roll
   #[serde(default = "default_count")]
   pub count: u32,
 }

@@ -8,6 +8,8 @@ use anyhow::{Context, Result};
 pub struct Config {
   pub server: ServerConfig,
   pub telemetry: TelemetryConfig,
+  #[cfg(feature = "auth")]
+  pub redis: Option<RedisConfig>,
   #[cfg(feature = "database")]
   pub database: Option<DatabaseConfig>,
 }
@@ -38,6 +40,12 @@ pub struct TelemetryConfig {
 pub enum LogFormat {
   Pretty,
   Json,
+}
+
+#[cfg(feature = "auth")]
+#[derive(Debug, Deserialize, Clone)]
+pub struct RedisConfig {
+  pub url: String,
 }
 
 #[cfg(feature = "database")]
@@ -143,6 +151,10 @@ format = "pretty"
 # Log to file when using stdio to avoid interfering with JSON-RPC
 file = "/tmp/{}.log"
 
+# Uncomment and configure if using auth feature
+# [redis]
+# url = "redis://localhost:6379"
+
 # Uncomment and configure if using database feature
 # [database]
 # url = "sqlite:///tmp/{}.db"
@@ -160,6 +172,11 @@ file = "/tmp/{}.log"
       // NOTE: No default transport - let config file decide to avoid override issues
       .set_default("telemetry.level", "info")?
       .set_default("telemetry.format", "pretty")?;
+
+    #[cfg(feature = "auth")]
+    {
+      builder = builder.set_default("redis.url", "redis://localhost:6379")?;
+    }
 
     // Add config sources in reverse order (last one wins for overlapping keys)
     // This allows local/docker configs to override user config

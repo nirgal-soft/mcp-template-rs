@@ -5,6 +5,7 @@ A production-ready template for building [Model Context Protocol (MCP)](https://
 ## Features
 
 - **Production Ready** - Structured logging, error handling, and graceful shutdown
+- **Authentication Support** - Session-based authentication with Redis and OAuth tokens
 - **Easy to Extend** - Clear patterns for adding new tools, resources, and prompts
 - **Flexible Configuration** - Environment variables and config files
 - **Telemetry Built-in** - Structured logging with tracing
@@ -29,9 +30,14 @@ The easiest way to use this template is with [`cargo-generate`](https://github.c
    cargo generate --git https://git.sr.ht/~nirgal/mcp-template
    ```
    
-   You'll be prompted to enter:
+   You'll be prompted to choose:
    - **Project name**: This will be used as the crate name and binary name
-   - The tool will automatically set up all the necessary files with your project name
+   - **Authentication features**: Include Redis-based auth and OAuth (optional)
+   - **HTTP client tools**: Include tools for making API calls (optional)
+   - **Database support**: Include SQLx for database operations (optional)
+   - **AWS SDK**: Include AWS services integration (optional)
+   
+   The template will generate only the features you need, keeping your project lightweight.
 
 3. **Navigate to your new project and run it**:
    ```bash
@@ -39,6 +45,8 @@ The easiest way to use this template is with [`cargo-generate`](https://github.c
    cp stdio_config.toml.example config.toml
    cargo run
    ```
+
+   **Note**: This template includes all necessary compiler fixes for compatibility with rmcp SDK commit 3196c95f and schemars 1.0. The generated project should compile without errors.
 
 4. **Test with an MCP client**:
    ```bash
@@ -72,9 +80,12 @@ your-project-name/
 │   ├── error.rs             # Error types and handling
 │   ├── state.rs             # Shared server state
 │   ├── telemetry.rs         # Logging and tracing setup
+│   ├── auth.rs              # Authentication module (optional)
 │   └── tools/               # Your MCP tools
 │       ├── mod.rs           # Tool registry and exports
-│       └── dice_example.rs  # Example dice rolling tool
+│       ├── dice_example.rs  # Basic dice rolling tool (always included)
+│       ├── session_example.rs    # Session auth examples (auth-examples feature)
+│       └── http_client_example.rs # HTTP client tools (http-examples feature)
 ├── tests/
 │   └── integration_test.rs  # Integration tests
 ├── deploy/
@@ -87,14 +98,79 @@ your-project-name/
 ├── Cargo.lock               # Dependency lock file
 ├── stdio_config.toml.example           # Example configuration file
 ├── streaming_config.toml.example       # Example configuration file
+├── auth_config.toml.example            # Authentication configuration example
+├── oauth_config.toml.example           # OAuth-specific configuration example
 ├── .env.example             # Example environment variables
+├── .env.auth.example        # Authentication environment variables
+├── AUTHENTICATION.md.template          # Authentication implementation guide
 ├── .gitignore               # Git ignore rules
 └── license.txt              # MIT license
 ```
 
-## Adding Tools
+## Modular Features
 
-Tools are the core of MCP - they're functions that AI assistants can call. The template includes a dice rolling example to get you started.
+This template is designed to be lightweight and modular. You only get what you need:
+
+### Available Features
+
+| Feature | Description | Dependencies | Use Case |
+|---------|-------------|--------------|----------|
+| `basic-tools` (default) | Just the dice tool example | Minimal | Learning MCP, simple tools |
+| `auth` | Redis sessions, OAuth tokens | redis, uuid, zeroize, chrono | User authentication |
+| `auth-examples` | Session-based tool examples | Requires `auth` | Auth implementation patterns |
+| `http-client` | HTTP client functionality | reqwest | Making API calls |
+| `http-examples` | HTTP client tool examples | Requires `http-client` | API integration patterns |
+| `database` | SQLx database support | sqlx | Database operations |
+| `aws` | AWS SDK integration | aws-sdk-s3 | Cloud services |
+| `full` | All features enabled | All above | Full-featured servers |
+
+### Adding Features Later
+
+You can enable features in your `Cargo.toml`:
+
+```toml
+[features]
+default = ["basic-tools", "auth", "http-client"]
+# Or enable everything:
+# default = ["full"]
+```
+
+### Minimal Start (Default)
+
+The default template includes only:
+- Basic dice rolling tool
+- Core MCP functionality  
+- ~8 dependencies
+- Fast compilation
+
+### Adding Authentication
+
+Enable auth features for session-based authentication:
+
+```toml
+[features]
+default = ["auth-examples"]
+```
+
+This adds:
+- Redis-based session management
+- OAuth token handling with secure memory
+- UUID validation for session IDs
+- Session and user profile tools
+
+### Adding HTTP Client Tools
+
+Enable HTTP features for API integration:
+
+```toml
+[features] 
+default = ["http-examples"]
+```
+
+This adds:
+- HTTP client with authentication
+- API call examples
+- Request/response handling patterns
 
 ### Example: The Dice Tool
 
@@ -202,16 +278,20 @@ The server can be configured via:
    # OR
    transport = { http-streaming = { port = 8080 } }  # For HTTP streaming
 
-   [telemetry]
-   level = "info"        # debug, info, warn, error
-   format = "pretty"     # pretty, json
-   # file = "server.log" # optional, defaults to stdout
-   ```
+    [telemetry]
+    level = "info"        # debug, info, warn, error
+    format = "pretty"     # pretty, json
+    # file = "server.log" # optional, defaults to stdout
+
+    # Optional: Redis configuration for authentication
+    [redis]
+    url = "redis://localhost:6379"   ```
 
 2. **Environment variables** (prefixed with `MCP_`):
    ```bash
    MCP_SERVER_NAME=my-server
    MCP_TELEMETRY_LEVEL=debug
+   MCP_REDIS_URL=redis://localhost:6379  # For authentication
    cargo run
    ```
 

@@ -20,4 +20,16 @@ pub enum ServerError {
 
   #[error("IO error: {0}")]
   Io(#[from] std::io::Error),
+
+  #[cfg(feature = "auth")]
+  #[error("Authentication error: {0}")]
+  InvalidSession(String),
+
+  #[cfg(feature = "auth")]
+  #[error("Redis error: {0}")]
+  Redis(String),
+
+  #[cfg(feature = "http-client")]
+  #[error("HTTP client error: {0}")]
+  HttpClient(String),
 }
