@@ -1,0 +1,53 @@
+[template]
+cargo_generate_version = ">=0.10.0"
+
+[placeholders.project_name]
+type = "string"
+prompt = "What is the name of your MCP server project?"
+regex = "^[a-zA-Z][a-zA-Z0-9_-]*$"
+
+[placeholders.include_auth]
+type = "bool"
+prompt = "Include authentication features (Redis, OAuth, sessions)?"
+default = false
+
+[placeholders.include_http_client]
+type = "bool"
+prompt = "Include HTTP client tools for making API calls?"
+default = false
+
+[placeholders.include_database]
+type = "bool"
+prompt = "Include database support (SQLx)?"
+default = false
+
+[placeholders.include_aws]
+type = "bool"
+prompt = "Include AWS SDK support?"
+default = false
+
+[conditional.'include_auth == true']
+ignore = []
+
+[conditional.'include_auth == false']
+ignore = [
+    "src/auth.rs",
+    "auth_config.toml.example",
+    "oauth_config.toml.example"
+]
+
+[conditional.'include_http_client == false && include_auth == false']
+ignore = [
+    "src/tools/session_example.rs",
+    "src/tools/http_client_example.rs"
+]
+
+[conditional.'include_http_client == false && include_auth == true']
+ignore = [
+    "src/tools/http_client_example.rs"
+]
+
+[conditional.'include_http_client == true && include_auth == false']
+ignore = [
+    "src/tools/session_example.rs"
+]

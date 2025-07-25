@@ -58,8 +58,13 @@ basic-tools = []
 database = ["sqlx"]
 http-client = ["reqwest"]
 aws = ["aws-sdk-s3"]
-auth = ["redis", "uuid", "zeroize", "chrono"]
-auth-examples = ["auth"]
+# Core auth trait - allows pluggable authentication
+auth = []
+# Specific auth implementations
+auth-redis = ["auth", "redis", "uuid", "zeroize", "chrono"]
+auth-apikey = ["auth"]
+# Examples
+auth-examples = ["auth-redis"]
 http-examples = ["http-client"]
 full = ["auth-examples", "http-examples", "database", "aws"]
 

@@ -1,0 +1,197 @@
+COMPREHENSIVE LIST OF COMPILER FIXES FOR RUST MCP TEMPLATE
+================================================================
+
+This document details all changes made to fix compiler errors in the Rust MCP template repository.
+These changes ensure compatibility with rmcp SDK commit 3196c95f and schemars 1.0.
+
+OVERVIEW OF ISSUES FIXED:
+========================
+1. Missing auth module declaration
+2. Schemars version conflict (0.8 vs 1.0)
+3. Deprecated rmcp::Error usage
+4. Missing uuid dependency
+5. Conditional compilation issues with auth feature
+6. Unused imports cleanup
+
+DETAILED CHANGES BY FILE:
+========================
+
+1. Cargo.toml
+-------------
+CHANGES:
+- REMOVED: schemars = "0.8" from serialization dependencies
+- ADDED: schemars = "1.0" to serialization dependencies  
+- CHANGED: uuid dependency from optional to required
+  FROM: uuid = { version = "1.0", features = ["v4", "serde"], optional = true }
+  TO:   uuid = { version = "1.0", features = ["v4", "serde"] }
+- UPDATED: auth feature dependencies
+  FROM: auth = ["redis", "uuid", "zeroize", "chrono"]
+  TO:   auth = ["redis", "zeroize", "chrono"]
+
+REASONING: 
+- schemars 1.0 required to match rmcp SDK dependency
+- uuid made unconditional to avoid conditional compilation complexity
+- Removed uuid from auth feature since it's now always available
+
+2. src/lib.rs
+-------------
+CHANGES:
+- ADDED: pub mod auth; (line 1, before other modules)
+- UPDATED: Error import
+  FROM: Error as McpError,
+  TO:   ErrorData as McpError,
+- REMOVED: schemars from rmcp imports
+  FROM: schemars, tool, tool_handler, tool_router
+  TO:   tool, tool_handler, tool_router
+- REMOVED: wrapper::Json from imports
+  FROM: use rmcp::handler::server::{router::tool::ToolRouter, tool::Parameters, wrapper::Json};
+  TO:   use rmcp::handler::server::{router::tool::ToolRouter, tool::Parameters};
+
+REASONING:
+- auth module was missing causing import errors in other files
+- rmcp::Error deprecated in favor of rmcp::ErrorData
+- schemars should be imported directly, not through rmcp
+- wrapper::Json was unused
+
+3. src/auth.rs
+--------------
+CHANGES:
+- REMOVED: Context import from anyhow
+  FROM: use anyhow::{Context, Result};
+  TO:   use anyhow::Result;
+- UPDATED: OAuthTokenData conditional compilation
+  FROM: #[cfg(feature = "auth")]
+        #[derive(Serialize, Deserialize, Clone, Zeroize, ZeroizeOnDrop)]
+  TO:   #[derive(Serialize, Deserialize, Clone)]
+        #[cfg_attr(feature = "auth", derive(zeroize::Zeroize, zeroize::ZeroizeOnDrop))]
+- UPDATED: zeroize attributes to be conditional
+  FROM: #[zeroize(skip)]
+  TO:   #[cfg_attr(feature = "auth", zeroize(skip))]
+- MOVED: OAuthTokenData impl outside feature gate
+  FROM: #[cfg(feature = "auth")]
+        impl OAuthTokenData {
+  TO:   impl OAuthTokenData {
+- UPDATED: is_expired() method with conditional compilation
+  Added #[cfg(feature = "auth")] and #[cfg(not(feature = "auth"))] blocks
+- SIMPLIFIED: feature imports
+  FROM: #[cfg(feature = "auth")]
+        use {
+            zeroize::{Zeroize, ZeroizeOnDrop},
+            redis::AsyncCommands,
+        };
+  TO:   #[cfg(feature = "auth")]
+        use redis::AsyncCommands;
+- UPDATED: Error types in non-auth implementations
+  FROM: ServerError::InvalidSession
+  TO:   ServerError::InvalidInput
+  (Applied to resolve_session, get_oauth_token, authenticate, validate_session_format)
+
+REASONING:
+- OAuthTokenData needs to be available regardless of auth feature for type compatibility
+- Conditional compilation ensures zeroize only used when auth feature enabled
+- InvalidSession error variant only available with auth feature
+- Context import was unused
+
+4. src/tools/dice_example.rs
+----------------------------
+CHANGES:
+- UPDATED: Error import
+  FROM: use rmcp::{Error as McpError, model::{CallToolResult, Content}};
+  TO:   use rmcp::{ErrorData as McpError, model::{CallToolResult, Content}};
+- ADDED: schemars import
+  FROM: use serde::Deserialize;
+  TO:   use serde::Deserialize;
+        use schemars::JsonSchema;
+- UPDATED: JsonSchema derive
+  FROM: #[derive(Debug, Deserialize, JsonSchema)]
+  TO:   #[derive(Debug, Deserialize, JsonSchema)]
+- ADDED: Documentation comments for schema
+  FROM: #[schemars(description = "Number of sides on the dice (e.g. 6 for d6, 20 for d20)")]
+        pub sides: u32,
+        #[schemars(description = "Number of dice to roll")]
+  TO:   /// Number of sides on the dice (e.g. 6 for d6, 20 for d20)
+        pub sides: u32,
+        /// Number of dice to roll
+
+REASONING:
+- rmcp::Error deprecated
+- schemars 1.0 requires direct import
+- Doc comments preferred over schemars attributes for descriptions
+
+5. src/tools/session_example.rs
+-------------------------------
+CHANGES:
+- UPDATED: Error import
+  FROM: use rmcp::{Error as McpError, model::{CallToolResult, Content}, schemars::JsonSchema};
+  TO:   use rmcp::{ErrorData as McpError, model::{CallToolResult, Content}};
+- ADDED: schemars import
+  ADDED: use schemars::JsonSchema;
+- UPDATED: JsonSchema derives (2 structs)
+  Both SessionInfoRequest and UserProfileRequest updated similarly to dice_example.rs
+- CONVERTED: schemars attributes to doc comments
+  FROM: #[schemars(description = "Session ID for authenticated user (UUID4 format)")]
+  TO:   /// Session ID for authenticated user (UUID4 format)
+
+REASONING: Same as dice_example.rs
+
+6. src/tools/http_client_example.rs
+----------------------------------
+CHANGES:
+- UPDATED: Error import (same as other tools)
+- ADDED: schemars import
+- UPDATED: JsonSchema derives (2 structs: AuthenticatedApiRequest, PublicApiRequest)
+- CONVERTED: All schemars attributes to doc comments
+  Examples:
+  FROM: #[schemars(description = "Session ID for authenticated user (UUID4 format)")]
+  TO:   /// Session ID for authenticated user (UUID4 format)
+  FROM: #[schemars(description = "API endpoint URL to call")]
+  TO:   /// API endpoint URL to call
+  FROM: #[schemars(description = "OAuth provider for token (e.g., 'google', 'github')")]
+  TO:   /// OAuth provider for token (e.g., 'google', 'github')
+  FROM: #[schemars(description = "HTTP method (GET, POST, PUT, DELETE)")]
+  TO:   /// HTTP method (GET, POST, PUT, DELETE)
+  FROM: #[schemars(description = "Optional JSON body for POST/PUT requests")]
+  TO:   /// Optional JSON body for POST/PUT requests
+
+REASONING: Same as other tool files
+
+VERIFICATION STEPS:
+==================
+After applying all changes:
+
+1. cargo check - Should pass without errors
+2. cargo build - Should compile successfully  
+3. cargo test - All tests should pass
+
+EXPECTED WARNINGS:
+=================
+- One unused variable warning in session_example.rs test (non-critical)
+- No other warnings should appear
+
+COMPATIBILITY NOTES:
+===================
+- These changes are compatible with rmcp SDK commit 3196c95f and later
+- schemars 1.0 is required (matches rmcp dependency)
+- uuid is now always available (not feature-gated)
+- All auth-related functionality works with and without auth feature
+- JsonSchema implementations use schemars 1.0 API
+
+TEMPLATE UPDATE CHECKLIST:
+==========================
+□ Update Cargo.toml dependencies as specified
+□ Add auth module declaration to lib.rs
+□ Update all rmcp::Error to rmcp::ErrorData
+□ Remove unused imports from lib.rs
+□ Fix conditional compilation in auth.rs
+□ Update all tool files with new schemars imports and doc comments
+□ Test compilation with: cargo check && cargo build && cargo test
+
+CRITICAL SUCCESS FACTORS:
+========================
+1. schemars version MUST be 1.0 to match rmcp
+2. uuid MUST be unconditional dependency
+3. auth module MUST be declared in lib.rs
+4. All rmcp::Error references MUST be updated to rmcp::ErrorData
+5. JsonSchema derives MUST import schemars directly, not through rmcp
+
+This comprehensive fix ensures the Rust MCP template compiles successfully and is ready for development.

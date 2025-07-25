@@ -1,0 +1,30 @@
+# Example configuration for MCP server with authentication
+# Copy this to config.toml and customize for your needs
+
+[server]
+name = "{{project-name}}"
+# Use stdio for Claude Desktop integration
+transport = "stdio"
+# Or use HTTP streaming for web integration
+# transport = { http-streaming = { port = 8080 } }
+
+[telemetry]
+level = "info"
+format = "pretty"
+# Log to file when using stdio to avoid interfering with JSON-RPC
+file = "/tmp/{{project-name}}.log"
+
+[redis]
+# Redis connection URL for session and OAuth token storage
+url = "redis://localhost:6379"
+# For Redis with authentication:
+# url = "redis://:password@localhost:6379"
+# For Redis Cluster:
+# url = "redis://localhost:7000,localhost:7001,localhost:7002"
+# For Redis with SSL:
+# url = "rediss://localhost:6380"
+
+# Uncomment and configure if using database feature
+# [database]
+# url = "sqlite:///tmp/{{project-name}}.db"
+# max_connections = 10
