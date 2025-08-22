@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # MCP SDK - use git version for streamable HTTP server
-rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", features = ["server", "macros", "transport-io", "transport-streamable-http-server", "transport-worker"] }
+rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", branch = "main", features = ["server", "macros", "transport-io", "transport-streamable-http-server", "transport-worker"] }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }

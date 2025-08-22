@@ -1,5 +1,5 @@
 use rand::Rng;
-use rmcp::{ErrorData as McpError, model::{CallToolResult, Content}};
+use rmcp::model::{ErrorData as McpError, CallToolResult, Content};
 use serde::Deserialize;
 use schemars::JsonSchema;
 

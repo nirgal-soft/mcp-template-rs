@@ -6,15 +6,14 @@ pub mod tools;
 pub mod state;
 pub mod telemetry;
 
-use std::future::Future;
 use std::net::SocketAddr;
 use rmcp::{
-  ServerHandler, ServiceExt, ErrorData as McpError,
+  ServerHandler, ServiceExt,
   tool, tool_handler, tool_router
 };
 use rmcp::transport::{stdio, streamable_http_server::{StreamableHttpService, StreamableHttpServerConfig}};
-use rmcp::model::*;
-use rmcp::handler::server::{router::tool::ToolRouter, tool::Parameters};
+use rmcp::model::{*, ErrorData as McpError};
+use rmcp::handler::server::{router::tool::ToolRouter, wrapper::Parameters};
 use tower::Service;
 
 use crate::config::Config;
