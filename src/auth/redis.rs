@@ -170,7 +170,7 @@ mod tests {
         // Invalid formats
         assert!(RedisAuthService::validate_session_format("invalid-uuid").is_err());
         assert!(RedisAuthService::validate_session_format("").is_err());
-        assert!(RedisAuthService::validate_session_format("123").is_err();
+        assert!(RedisAuthService::validate_session_format("123").is_err());
     }
 
     #[cfg(feature = "auth")]

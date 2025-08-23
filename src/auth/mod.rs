@@ -43,3 +43,10 @@ impl AuthProvider for NoOpAuthProvider {
         Err(ServerError::InvalidSession("Authentication is disabled".to_string()))
     }
 }
+
+// Type alias for auth service - users choose implementation
+#[cfg(feature = "auth-redis")]
+pub type AuthService = RedisAuthService;
+
+#[cfg(all(feature = "auth-apikey", not(feature = "auth-redis")))]
+pub type AuthService = ApiKeyAuthService;
