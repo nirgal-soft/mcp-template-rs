@@ -88,7 +88,7 @@ impl Server {
         tracing::info!("Transport: HTTP Streaming (using rmcp StreamableHttpService)");
         tracing::info!("Server URL: http://localhost:{}", port);
         
-        let addr: SocketAddr = format!("0.0.0.0:{}", port).parse().unwrap();
+        let addr: SocketAddr = format!("[::]:{}", port).parse().unwrap();
         
         // Create the rmcp StreamableHttpService
         use std::sync::Arc;
